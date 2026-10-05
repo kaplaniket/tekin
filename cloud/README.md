@@ -48,6 +48,21 @@ curl -s -X POST --data @anfrage.json http://127.0.0.1:8765/ask   # z. B. aus Her
 Einzeln nachinstallieren, z. B. direkt auf dem Pi: `cloud/jev/install-jev.sh` aus dem Repo als der Benutzer ausfuehren, der Hermes betreibt (nicht root). Gibt es dort schon einen anderen Befehl `jev`, heisst der Befehl `jev-ts`.
 Der Dienst lauscht nur auf `127.0.0.1` und ist von aussen nicht erreichbar.
 
+### Hermes nutzt Jev
+
+`install-jev.sh` legt zusaetzlich einen MCP-Server (`jev_mcp.py`) und den Hermes-Skill
+`~/.hermes/skills/jev` an. Einmalig eintragen und Hermes neu starten:
+
+```bash
+hermes mcp add jev --command ~/.local/share/jev-agent/venv/bin/python --args ~/.local/share/jev-agent/jev_mcp.py
+hermes gateway restart
+hermes mcp test jev
+```
+
+Hermes bekommt damit die Werkzeuge `jev_classify`, `jev_check`, `jev_score` und `jev_ask`.
+Der MCP-Server liest `TYPESAFE_API_KEY` selbst aus `~/.hermes/.env`, der Schluessel steht
+also nicht in der `config.yaml`.
+
 ## Sicherheit
 
 - Die Firewall erlaubt von aussen nur SSH. Das Hermes-Dashboard (Port 9119) nur

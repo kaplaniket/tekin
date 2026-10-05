@@ -19,13 +19,18 @@ mkdir -p "$APP"
 if command -v uv >/dev/null || [ -x "$BIN/uv" ]; then
     UV="$(command -v uv || echo "$BIN/uv")"
     "$UV" venv --quiet --allow-existing "$APP/venv"
-    "$UV" pip install --quiet --python "$APP/venv/bin/python" --upgrade typesafe-sdk
+    "$UV" pip install --quiet --python "$APP/venv/bin/python" --upgrade typesafe-sdk "mcp>=1.10,<2"
 else
     python3 -m venv "$APP/venv"
-    "$APP/venv/bin/pip" install --quiet --upgrade typesafe-sdk
+    "$APP/venv/bin/pip" install --quiet --upgrade typesafe-sdk "mcp>=1.10,<2"
 fi
 install -m 755 "$HERE/jev_agent.py" "$APP/jev_agent.py"
 install -m 644 "$HERE/beispiel.json" "$APP/beispiel.json"
+install -m 755 "$HERE/jev_mcp.py" "$APP/jev_mcp.py"
+
+echo "==> Hermes-Skill jev nach ~/.hermes/skills/jev"
+install -d "$HOME/.hermes/skills/jev"
+install -m 644 "$HERE/SKILL.md" "$HOME/.hermes/skills/jev/SKILL.md"
 
 # Einen vorhandenen fremden `jev`-Befehl nicht ueberschreiben.
 NAME="jev"
@@ -74,3 +79,8 @@ else
     echo "TYPESAFE_API_KEY fehlt in ~/.hermes/.env - eintragen, dann:"
     echo "  systemctl --user enable --now jev-agent"
 fi
+
+echo
+echo "Hermes an Jev anbinden (einmalig, fragt nach den Werkzeugen - einfach bestaetigen):"
+echo "  hermes mcp add jev --command $APP/venv/bin/python --args $APP/jev_mcp.py"
+echo "Danach Hermes neu starten (z. B. hermes gateway restart) und testen: hermes mcp test jev"
