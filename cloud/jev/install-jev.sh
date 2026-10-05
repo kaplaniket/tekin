@@ -54,6 +54,7 @@ exec "$APP/venv/bin/python" "$APP/jev_agent.py" "\$@"
 EOF
 chmod 755 "$BIN/$NAME"
 
+if command -v systemctl >/dev/null && systemctl --user show-environment >/dev/null 2>&1; then
 echo "==> systemd-User-Dienst jev-agent (nur 127.0.0.1:8765)"
 mkdir -p "$HOME/.config/systemd/user"
 cat > "$HOME/.config/systemd/user/jev-agent.service" <<EOF
@@ -78,6 +79,13 @@ if grep -qE '^TYPESAFE_API_KEY=.+' "$HOME/.hermes/.env" 2>/dev/null; then
 else
     echo "TYPESAFE_API_KEY fehlt in ~/.hermes/.env - eintragen, dann:"
     echo "  systemctl --user enable --now jev-agent"
+fi
+else
+# macOS & Co.: kein systemd. Hermes braucht den HTTP-Dienst nicht, es nutzt Jev ueber MCP.
+echo "==> Kein systemd gefunden (z. B. macOS) - HTTP-Dienst uebersprungen."
+grep -qE '^TYPESAFE_API_KEY=.+' "$HOME/.hermes/.env" 2>/dev/null \
+    || echo "TYPESAFE_API_KEY fehlt noch in ~/.hermes/.env - bitte eintragen."
+echo "Test:  $NAME ask $APP/beispiel.json"
 fi
 
 echo
