@@ -1,0 +1,30 @@
+{
+  "state": {
+    "nachricht": "Hallo, ist das Sofa noch zu haben? Ich koennte es morgen abholen und bar bezahlen."
+  },
+  "questions": {
+    "absicht": {
+      "type": "choice",
+      "instructions": "Was will die Person mit `nachricht`?",
+      "criteria": {
+        "kaufen": "Will den Artikel kaufen oder abholen.",
+        "preis_verhandeln": "Will vor allem einen niedrigeren Preis.",
+        "frage": "Stellt nur eine Frage zum Artikel.",
+        "spam": "Werbung, Betrug oder kein Bezug zum Artikel."
+      }
+    },
+    "betrug": {
+      "type": "noul",
+      "instructions": "Wirkt `nachricht` wie ein typischer Kleinanzeigen-Betrugsversuch?"
+    },
+    "dringlichkeit": {
+      "type": "score",
+      "instructions": "Wie schnell sollte auf `nachricht` geantwortet werden?",
+      "criteria": [
+        "Kann warten, keine Eile erkennbar.",
+        "Antwort heute sinnvoll.",
+        "Sofort antworten, konkreter Termin oder Kaufzusage."
+      ]
+    }
+  }
+}

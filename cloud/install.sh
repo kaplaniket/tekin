@@ -2,18 +2,21 @@
 # Installiert Tekins Agenten auf einem frischen Cloud-Server (Debian/Ubuntu):
 #   - Hermes Agent (NousResearch) inkl. Gateway als Dauerdienst (systemd --user)
 #   - Prime CLI / Prime Agent (Prime Intellect) als One-Shot-Werkzeug, kein Dauerprozess
+#   - Jev-Agent (TypeSafe System One) als CLI `jev` und lokaler Dienst
 #   - optional Tailscale, damit Pi, iMac und Cloud-Server sich im selben Netz sehen
 #
 # Aufruf als root auf dem Server:
 #   curl -fsSL https://raw.githubusercontent.com/kaplaniket/tekin/main/cloud/install.sh | sudo bash
 # oder nach git clone:
-#   sudo ./cloud/install.sh [--user hermes] [--no-tailscale] [--no-prime] [--no-gateway]
+#   sudo ./cloud/install.sh [--user hermes] [--no-tailscale] [--no-prime] [--no-gateway] [--no-jev]
 set -euo pipefail
 
 AGENT_USER="hermes"
 WITH_TAILSCALE=true
 WITH_PRIME=true
 WITH_GATEWAY=true
+WITH_JEV=true
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -21,6 +24,7 @@ while [ $# -gt 0 ]; do
         --no-tailscale) WITH_TAILSCALE=false; shift ;;
         --no-prime) WITH_PRIME=false; shift ;;
         --no-gateway) WITH_GATEWAY=false; shift ;;
+        --no-jev) WITH_JEV=false; shift ;;
         -h|--help) sed -n 2,10p "$0"; exit 0 ;;
         *) echo "Unbekannte Option: $1" >&2; exit 2 ;;
     esac
@@ -82,11 +86,20 @@ if $WITH_PRIME; then
     as_agent 'uv tool install --upgrade prime'
 fi
 
+if $WITH_JEV; then
+    log "Jev-Agent (TypeSafe) installieren"
+    JEV_SRC="$AGENT_HOME/.local/share/jev-agent-src"
+    install -d -o "$AGENT_USER" -g "$AGENT_USER" "$JEV_SRC"
+    install -o "$AGENT_USER" -g "$AGENT_USER" -m 755 "$SCRIPT_DIR"/jev/* "$JEV_SRC"/ 2>/dev/null \
+        && as_agent "$JEV_SRC/install-jev.sh" \
+        || echo "cloud/jev nicht gefunden - Repo klonen und cloud/jev/install-jev.sh ausfuehren."
+fi
+
 if [ ! -f "$AGENT_HOME/.hermes/.env" ]; then
     log ".env-Vorlage anlegen"
     install -d -o "$AGENT_USER" -g "$AGENT_USER" -m 700 "$AGENT_HOME/.hermes"
     install -o "$AGENT_USER" -g "$AGENT_USER" -m 600 \
-        "$(dirname "$(readlink -f "$0")")/env.example" "$AGENT_HOME/.hermes/.env" 2>/dev/null \
+        "$SCRIPT_DIR/env.example" "$AGENT_HOME/.hermes/.env" 2>/dev/null \
         || echo "env.example nicht gefunden - .env bitte manuell anlegen."
 fi
 
@@ -106,4 +119,6 @@ Naechste Schritte (als '$AGENT_USER': sudo -iu $AGENT_USER):
   3. Telegram & Co. verbinden:              hermes gateway setup
   4. Gateway starten und pruefen:           hermes gateway install && hermes doctor
   5. Prime anmelden:                        prime login
+  6. Jev: TYPESAFE_API_KEY in ~/.hermes/.env, dann
+     systemctl --user enable --now jev-agent && jev ask ~/.local/share/jev-agent-src/beispiel.json
 EOF
