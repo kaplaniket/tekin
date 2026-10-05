@@ -41,7 +41,10 @@ mkdir -p "$BIN"
 cat > "$BIN/$NAME" <<EOF
 #!/usr/bin/env bash
 $MARKER
-set -a; [ -f "\$HOME/.hermes/.env" ] && . "\$HOME/.hermes/.env"; set +a
+# Nur die TYPESAFE_*-Zeilen uebernehmen, die restliche .env wird nicht ausgefuehrt.
+if [ -f "\$HOME/.hermes/.env" ]; then
+    while IFS= read -r line; do export "\$line"; done < <(grep -E '^TYPESAFE_[A-Z_]+=' "\$HOME/.hermes/.env")
+fi
 exec "$APP/venv/bin/python" "$APP/jev_agent.py" "\$@"
 EOF
 chmod 755 "$BIN/$NAME"
