@@ -120,5 +120,5 @@ Naechste Schritte (als '$AGENT_USER': sudo -iu $AGENT_USER):
   4. Gateway starten und pruefen:           hermes gateway install && hermes doctor
   5. Prime anmelden:                        prime login
   6. Jev: TYPESAFE_API_KEY in ~/.hermes/.env, dann
-     systemctl --user enable --now jev-agent && jev ask ~/.local/share/jev-agent-src/beispiel.json
+     systemctl --user enable --now jev-agent && jev ask ~/.local/share/jev-agent/beispiel.json
 EOF

@@ -99,7 +99,7 @@ def main() -> int:
     args = parser.parse_args()
     try:
         return args.func(args)
-    except (ValueError, json.JSONDecodeError, TypeSafeError) as error:
+    except (OSError, ValueError, json.JSONDecodeError, TypeSafeError) as error:
         print(f"jev: {error}", file=sys.stderr)
         return 1
 

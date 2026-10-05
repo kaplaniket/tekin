@@ -41,11 +41,11 @@ Agent, der das offizielle `typesafe-sdk` nutzt.
 ```bash
 nano ~/.hermes/.env                     # TYPESAFE_API_KEY=... eintragen
 systemctl --user enable --now jev-agent
-jev ask ~/.local/share/jev-agent-src/beispiel.json   # Kommandozeile
+jev ask ~/.local/share/jev-agent/beispiel.json   # Kommandozeile
 curl -s -X POST --data @anfrage.json http://127.0.0.1:8765/ask   # z. B. aus Hermes
 ```
 
-Einzeln nachinstallieren: `cloud/jev/install-jev.sh` aus dem Repo, als Agent-Benutzer ausfuehren.
+Einzeln nachinstallieren, z. B. direkt auf dem Pi: `cloud/jev/install-jev.sh` aus dem Repo als der Benutzer ausfuehren, der Hermes betreibt (nicht root). Gibt es dort schon einen anderen Befehl `jev`, heisst der Befehl `jev-ts`.
 Der Dienst lauscht nur auf `127.0.0.1` und ist von aussen nicht erreichbar.
 
 ## Sicherheit
