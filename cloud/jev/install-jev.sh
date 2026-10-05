@@ -48,7 +48,10 @@ cat > "$BIN/$NAME" <<EOF
 $MARKER
 # Nur die TYPESAFE_*-Zeilen uebernehmen, die restliche .env wird nicht ausgefuehrt.
 if [ -f "\$HOME/.hermes/.env" ]; then
-    while IFS= read -r line; do export "\$line"; done < <(grep -E '^TYPESAFE_[A-Z_]+=' "\$HOME/.hermes/.env")
+    while IFS== read -r key value; do
+        value="\${value%[\"\']}"; value="\${value#[\"\']}"
+        export "\$key=\$value"
+    done < <(grep -E '^TYPESAFE_[A-Z_]+=' "\$HOME/.hermes/.env")
 fi
 exec "$APP/venv/bin/python" "$APP/jev_agent.py" "\$@"
 EOF

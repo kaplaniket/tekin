@@ -25,7 +25,7 @@ while [ $# -gt 0 ]; do
         --no-prime) WITH_PRIME=false; shift ;;
         --no-gateway) WITH_GATEWAY=false; shift ;;
         --no-jev) WITH_JEV=false; shift ;;
-        -h|--help) sed -n 2,10p "$0"; exit 0 ;;
+        -h|--help) sed -n 2,11p "$0"; exit 0 ;;
         *) echo "Unbekannte Option: $1" >&2; exit 2 ;;
     esac
 done
