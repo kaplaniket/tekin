@@ -59,6 +59,14 @@ as_agent() {
         PATH="$AGENT_HOME/.local/bin:/usr/local/bin:/usr/bin:/bin" bash -lc "$1"
 }
 
+# Repo-Kopie im Home des Agent-Benutzers, damit z. B. ~/tekin/cloud/migrate-from-pi.sh existiert,
+# auch wenn das Repo als root geklont wurde.
+REPO_DIR="$(readlink -f "$SCRIPT_DIR/..")"
+if [ -d "$SCRIPT_DIR/jev" ] && [ "$REPO_DIR" != "$AGENT_HOME/tekin" ]; then
+    install -d -o "$AGENT_USER" -g "$AGENT_USER" "$AGENT_HOME/tekin"
+    rsync -a --chown="$AGENT_USER:$AGENT_USER" --exclude .git "$REPO_DIR"/ "$AGENT_HOME/tekin"/
+fi
+
 log "Firewall: nur SSH von aussen erlauben"
 ufw allow OpenSSH >/dev/null
 ufw --force enable >/dev/null
@@ -89,10 +97,14 @@ fi
 if $WITH_JEV; then
     log "Jev-Agent (TypeSafe) installieren"
     JEV_SRC="$AGENT_HOME/.local/share/jev-agent-src"
-    install -d -o "$AGENT_USER" -g "$AGENT_USER" "$JEV_SRC"
-    install -o "$AGENT_USER" -g "$AGENT_USER" -m 755 "$SCRIPT_DIR"/jev/* "$JEV_SRC"/ 2>/dev/null \
-        && as_agent "$JEV_SRC/install-jev.sh" \
-        || echo "cloud/jev nicht gefunden - Repo klonen und cloud/jev/install-jev.sh ausfuehren."
+    if [ -d "$SCRIPT_DIR/jev" ]; then
+        install -d -o "$AGENT_USER" -g "$AGENT_USER" "$JEV_SRC"
+        install -o "$AGENT_USER" -g "$AGENT_USER" -m 755 "$SCRIPT_DIR"/jev/* "$JEV_SRC"/
+        as_agent "$JEV_SRC/install-jev.sh" \
+            || echo "Jev-Installation fehlgeschlagen - Meldung oben lesen, dann $JEV_SRC/install-jev.sh als $AGENT_USER erneut ausfuehren."
+    else
+        echo "cloud/jev nicht gefunden - Repo klonen und cloud/jev/install-jev.sh ausfuehren."
+    fi
 fi
 
 if [ ! -f "$AGENT_HOME/.hermes/.env" ]; then
